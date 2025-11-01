@@ -4,12 +4,13 @@ import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import connectDB from "./config.js";
-import authRoutes from "./routes/authRoutes.js";
-import { User } from "./models/userModel.js";
+import connectDB from "./config.ts";
+import authRoutes from "./routes/authRoutes.ts";
+import { User } from "./models/userModel.ts";
 import Auth from "./utils/auth.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
-import designRoutes from "./routes/designRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.ts";
+import designRoutes from "./routes/designRoutes.ts";
+import compareRoutes from "./routes/compareRoute.ts"; // Add this import
 
 // Get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -91,7 +92,10 @@ console.log("✅ Serving uploads from:", uploadsDir);
 app.use("/api/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/designs", designRoutes);
-console.log("✅ Routes registered: /api/auth, /api/upload, /api/designs");
+app.use("/api/compare", compareRoutes); // Add this line
+console.log(
+  "✅ Routes registered: /api/auth, /api/upload, /api/designs, /api/compare"
+);
 
 // 404 handler - must be before error handler
 app.use((req: express.Request, res: express.Response) => {
@@ -122,8 +126,6 @@ app.use(
   }
 );
 
-// ...rest of your existing code (process handlers and start function)...
-
 const start = async () => {
   try {
     console.log("🚀 Starting server...");
@@ -135,9 +137,10 @@ const start = async () => {
       console.log(
         `✅ Upload endpoint: http://localhost:${port}/api/designs/save`
       );
+      console.log(
+        `✅ Compare endpoint: http://localhost:${port}/api/compare/compare`
+      ); // Add this line
     });
-
-    // ...rest of your existing start code...
 
     // Handle server errors on the server instance
     server.on("error", (error: any) => {

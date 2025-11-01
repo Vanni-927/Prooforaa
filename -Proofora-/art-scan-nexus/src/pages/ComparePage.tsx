@@ -1,24 +1,46 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Upload, Search, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Shield,
+  Upload,
+  Search,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 const ComparePage = () => {
   const [file1, setFile1] = useState<File | null>(null);
   const [file2, setFile2] = useState<File | null>(null);
+  const [preview1, setPreview1] = useState<string | null>(null);
+  const [preview2, setPreview2] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
   const [similarityScore, setSimilarityScore] = useState(0);
 
-  const handleFileSelect = (fileNum: 1 | 2, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (
+    fileNum: 1 | 2,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+
       if (fileNum === 1) {
         setFile1(file);
+        setPreview1(previewUrl);
+        // Clean up old preview
+        if (preview1) URL.revokeObjectURL(preview1);
       } else {
         setFile2(file);
+        setPreview2(previewUrl);
+        // Clean up old preview
+        if (preview2) URL.revokeObjectURL(preview2);
       }
     }
   };
@@ -32,21 +54,63 @@ const ComparePage = () => {
     setIsScanning(true);
     setScanComplete(false);
 
-    // Simulate AI comparison
-    setTimeout(() => {
-      const score = Math.floor(Math.random() * 40) + 60; // Random score between 60-100
+    try {
+      // Create FormData to send files
+      const formData = new FormData();
+      formData.append("file1", file1);
+      formData.append("file2", file2);
+
+      console.log("📤 Sending comparison request...");
+
+      // Send to backend API
+      const response = await fetch(
+        "http://localhost:5001/api/compare/compare",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response
+          .json()
+          .catch(() => ({ message: "Comparison failed" }));
+        throw new Error(
+          error.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("✅ Comparison result:", data);
+
+      const score = data.similarityScore;
       setSimilarityScore(score);
-      setIsScanning(false);
       setScanComplete(true);
-      
+
+      // Show appropriate toast based on similarity score
       if (score >= 90) {
-        toast.error("High similarity detected!");
+        toast.error("High similarity detected! Possible plagiarism risk.");
       } else if (score >= 70) {
         toast("Moderate similarity detected", { icon: "⚠️" });
       } else {
         toast.success("Low similarity - designs appear unique");
       }
-    }, 3000);
+    } catch (error: any) {
+      console.error("❌ Comparison error:", error);
+
+      let errorMessage = "Failed to compare designs";
+
+      if (error.message.includes("Failed to fetch")) {
+        errorMessage =
+          "Cannot connect to server. Make sure backend is running on port 5001";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage, { duration: 5000 });
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const getSimilarityColor = (score: number) => {
@@ -56,9 +120,23 @@ const ComparePage = () => {
   };
 
   const getSimilarityStatus = (score: number) => {
-    if (score >= 90) return { text: "High Risk", icon: AlertCircle, colorClass: "text-red-400" };
-    if (score >= 70) return { text: "Moderate Risk", icon: AlertCircle, colorClass: "text-yellow-400" };
-    return { text: "Unique Design", icon: CheckCircle, colorClass: "text-green-400" };
+    if (score >= 90)
+      return {
+        text: "High Risk",
+        icon: AlertCircle,
+        colorClass: "text-red-400",
+      };
+    if (score >= 70)
+      return {
+        text: "Moderate Risk",
+        icon: AlertCircle,
+        colorClass: "text-yellow-400",
+      };
+    return {
+      text: "Unique Design",
+      icon: CheckCircle,
+      colorClass: "text-green-400",
+    };
   };
 
   return (
@@ -107,6 +185,8 @@ const ComparePage = () => {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             {[1, 2].map((num) => {
               const file = num === 1 ? file1 : file2;
+              const preview = num === 1 ? preview1 : preview2;
+
               return (
                 <motion.div
                   key={num}
@@ -132,22 +212,45 @@ const ComparePage = () => {
                       <div className="cursor-pointer border-2 border-dashed border-white/20 rounded-xl p-12 text-center hover:border-purple-500/50 transition-all duration-300">
                         <motion.div
                           animate={{ y: [0, -10, 0] }}
-                          transition={{ duration: 2, repeat: Infinity, delay: num * 0.5 }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: num * 0.5,
+                          }}
                           className="inline-flex p-4 rounded-full bg-purple-500/10 mb-4"
                         >
                           <Upload className="w-8 h-8 text-purple-400" />
                         </motion.div>
                         <p className="text-gray-400">Click to upload</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          JPG, PNG, GIF up to 50MB
+                        </p>
                       </div>
                     </label>
                   ) : (
                     <div className="space-y-4">
+                      {/* Image Preview */}
+                      {preview && (
+                        <div className="aspect-video rounded-xl overflow-hidden bg-slate-900 border border-white/10">
+                          <img
+                            src={preview}
+                            alt={`Preview ${num}`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      )}
+
+                      {/* File Info */}
                       <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                        <p className="text-white font-medium truncate">{file.name}</p>
+                        <p className="text-white font-medium truncate">
+                          {file.name}
+                        </p>
                         <p className="text-sm text-gray-400 mt-1">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
+
+                      {/* Change File Button */}
                       <label htmlFor={`file-${num}`}>
                         <Button
                           asChild
@@ -182,7 +285,7 @@ const ComparePage = () => {
             ) : (
               <>
                 <Search className="w-5 h-5 mr-2" />
-                Compare Designs
+                Compare Designs with AI
               </>
             )}
           </Button>
@@ -240,14 +343,21 @@ const ComparePage = () => {
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 88}`}
                       initial={{ strokeDashoffset: 2 * Math.PI * 88 }}
-                      animate={{ strokeDashoffset: 2 * Math.PI * 88 * (1 - similarityScore / 100) }}
+                      animate={{
+                        strokeDashoffset:
+                          2 * Math.PI * 88 * (1 - similarityScore / 100),
+                      }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
                       className={getSimilarityColor(similarityScore)}
                       strokeLinecap="round"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className={`text-5xl font-bold ${getSimilarityColor(similarityScore)}`}>
+                    <span
+                      className={`text-5xl font-bold ${getSimilarityColor(
+                        similarityScore
+                      )}`}
+                    >
                       {similarityScore}%
                     </span>
                     <span className="text-sm text-gray-400">Similarity</span>
@@ -256,7 +366,7 @@ const ComparePage = () => {
               </div>
 
               {/* Status */}
-              <div className="text-center">
+              <div className="text-center mb-6">
                 {(() => {
                   const status = getSimilarityStatus(similarityScore);
                   const StatusIcon = status.icon;
@@ -269,6 +379,46 @@ const ComparePage = () => {
                     </div>
                   );
                 })()}
+              </div>
+
+              {/* Additional Info */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <p className="text-sm text-gray-400 mb-1">Design 1</p>
+                  <p className="text-white font-medium truncate">
+                    {file1?.name}
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <p className="text-sm text-gray-400 mb-1">Design 2</p>
+                  <p className="text-white font-medium truncate">
+                    {file2?.name}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 mt-6">
+                <Button
+                  onClick={() => {
+                    setFile1(null);
+                    setFile2(null);
+                    setPreview1(null);
+                    setPreview2(null);
+                    setScanComplete(false);
+                    setSimilarityScore(0);
+                  }}
+                  variant="outline"
+                  className="flex-1 border-white/20 bg-white/5 hover:bg-white/10 text-white"
+                >
+                  Compare New Designs
+                </Button>
+                <Link to="/upload" className="flex-1">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload & Protect
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           )}
