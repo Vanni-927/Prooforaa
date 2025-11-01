@@ -24,7 +24,7 @@ const LandingPage = () => {
             <div className="flex items-center space-x-2">
               <Shield className="w-8 h-8 text-purple-500" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                DesignGuard
+                Proofora
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -206,7 +206,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-white/10 backdrop-blur-xl bg-slate-950/80">
         <div className="container mx-auto text-center text-gray-400">
-          <p>© 2025 DesignGuard. All rights reserved.</p>
+          <p>© 2025 Proofora. All rights reserved.</p>
         </div>
       </footer>
     </div>
