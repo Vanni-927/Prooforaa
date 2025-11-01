@@ -197,7 +197,7 @@ const DesignDetailPage = () => {
             <Link to="/" className="flex items-center space-x-2">
               <Shield className="w-8 h-8 text-purple-500" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                DesignGuard
+                Proofora
               </span>
             </Link>
             <Link to="/dashboard">

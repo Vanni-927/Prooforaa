@@ -89,7 +89,7 @@ const RegisterPage = () => {
         >
           <Shield className="w-8 h-8 text-purple-500" />
           <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-            DesignGuard
+            Proofora
           </span>
         </Link>
 
