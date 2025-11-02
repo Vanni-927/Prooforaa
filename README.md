@@ -1,6 +1,6 @@
-🧾 Proofora - Blockchain-based Design Ownership Verification System
+<img width="1568" height="756" alt="image" src="https://github.com/user-attachments/assets/54b71612-fda3-4363-ace9-639ef0c07103" />🧾 Proofora - Blockchain-based Design Ownership Verification System
 
-🚀 Overview
+🚀 Description
 
 Proofora is a web platform that ensures design authenticity and ownership using the Aptos Blockchain. It empowers designers, UI/UX developers, and creators to protect their digital work from plagiarism by verifying and storing it securely on-chain.
 
@@ -12,7 +12,9 @@ Sends this data hash to the Aptos blockchain, ensuring immutable proof of owners
 
 Generates a verified ownership badge for the user — certifying authenticity and protection.
 
-💡 Why Proofora?
+
+
+💡Vision:  Why Proofora?
 
 Design plagiarism is an ever-growing problem. With rapid AI generation and digital sharing, proof of originality often becomes ambiguous. Existing tools only check for visual similarity, but fail to validate ownership or timestamp authenticity.
 
@@ -25,6 +27,7 @@ Providing tamper-proof timestamps for ownership tracking.
 Allowing legal evidence submission via immutable design records.
 
 Empowering designers to protect creativity and prove originality effortlessly.
+
 
 ⚙️ Core Features
 
@@ -57,6 +60,48 @@ Upload Figma prototypes, GitHub codebases, or JSON metadata for full proof-of-wo
 Integrate a web scraper that automatically checks for similar designs online.
 
 Expand blockchain storage to include multiple file types and metadata references.
+
+
+
+📜 Smart Contract: ProoforaDesignRegistry
+
+The ProoforaDesignRegistry smart contract is deployed on the Aptos Blockchain and serves as the backbone of Proofora’s ownership verification system. It securely records each design’s unique hash, along with the creator’s wallet address and timestamp, ensuring transparent and tamper-proof proof of ownership.
+
+Contract Details:
+
+Module: design_registry
+
+Package Name: ProoforaDesignRegistry
+
+Version: 1.0.0
+
+Blockchain: Aptos (Testnet)
+
+Upgrade Policy: Compatible
+
+Source Digest: 10BF1952AA7A87A50ACDB712061A9C03264818AC3020C35D8DAE078322767428
+
+Core Responsibilities:
+
+Register unique design hashes linked to creator wallet addresses.
+
+Store immutable timestamps for each registration.
+
+Enable public verification of design authenticity via on-chain queries.
+
+Maintain upgradability and security using Aptos Move’s modular architecture.
+
+Integration with Proofora:
+
+When a user uploads a design, its SHA-256 hash is generated.
+
+This hash, along with metadata (timestamp and wallet ID), is sent to the design_registry module.
+
+The frontend (React) and backend (Node.js) communicate through API calls that interact with Aptos using the Aptos SDK and CLI.
+
+The blockchain record is then reflected in the user’s Proofora dashboard, displaying verified ownership and transaction details
+
+
 
 🧩 Tech Stack
 
