@@ -13,7 +13,7 @@ export const compareImages = async (
   // Simulate processing delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const randomScore = Math.floor(Math.random() * 40) + 60;
+  const randomScore = Math.floor(Math.random() * 40) + 30;
 
   console.log(`✅ Comparison result: ${randomScore}% similarity`);
 
